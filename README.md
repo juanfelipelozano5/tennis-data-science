@@ -5,7 +5,7 @@ mediante un pipeline completo de Data Science: limpieza y auditoría de datos,
 análisis exploratorio, inferencia estadística, machine learning y un dashboard
 interactivo en HTML.
 
-**Prueba técnica — Data Analyst / Junior Data Scientist**
+
 **Autor:** Juan Felipe Lozano
 
 ---
