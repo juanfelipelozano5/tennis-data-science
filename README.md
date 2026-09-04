@@ -354,7 +354,6 @@ tennis-data-science/
 ├── dashboard/
 │   ├── index.html               # dashboard interactivo (abrir en el navegador)
 │   └── data/                    # CSV agregados usados como insumo del dashboard
-└── images/                     # gráficos clave exportados de los notebooks
 ```
 
 ### Pasos para reproducir
