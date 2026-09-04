@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Juego de las Llaves</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #c9a96e;
+    --gold-light: #e8d5a3;
+    --dark: #0d0b0e;
+    --dark2: #1a1520;
+    --text: #f0e8d8;
+    --text-muted: #a09080;
+    --accent: #8b5e8b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--dark);
+    color: var(--text);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(139,94,139,0.12) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(201,169,110,0.08) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* INTRO */
+  .intro {
+    text-align: center;
+    padding: 60px 0 50px;
+    border-bottom: 1px solid rgba(201,169,110,0.15);
+    margin-bottom: 48px;
+  }
+  .key-icon {
+    font-size: 48px;
+    display: block;
+    margin-bottom: 24px;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(-10deg); }
+    50% { transform: translateY(-8px) rotate(10deg); }
+  }
+  .intro h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.6rem;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--gold);
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+  .intro p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.9;
+    letter-spacing: 0.03em;
+  }
+  .counter-bar {
+    margin-top: 28px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .counter-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    color: var(--gold);
+    font-weight: 300;
+    display: block;
+    margin-top: 4px;
+  }
+
+  /* CURRENT CARD */
+  .current-card {
+    background: var(--dark2);
+    border: 1px solid rgba(201,169,110,0.3);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+    animation: revealCard 0.6s ease;
+  }
+  .current-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--gold);
+  }
+  @keyframes revealCard {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .card-top {
+    padding: 28px 28px 20px 36px;
+    border-bottom: 1px solid rgba(201,169,110,0.1);
+  }
+  .card-level {
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: var(--gold-light);
+    line-height: 1.3;
+  }
+  .card-body {
+    padding: 24px 28px 28px 36px;
+  }
+  .hint-box {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.8;
+    margin-bottom: 20px;
+    padding: 14px 16px;
+    background: rgba(201,169,110,0.04);
+    border-left: 2px solid rgba(201,169,110,0.25);
+    font-style: italic;
+  }
+  .hint-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+    font-style: normal;
+    display: block;
+  }
+  .opinion-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    display: block;
+  }
+  textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(201,169,110,0.2);
+    border-radius: 2px;
+    color: var(--text);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 300;
+    font-size: 0.83rem;
+    padding: 14px 16px;
+    resize: vertical;
+    min-height: 90px;
+    line-height: 1.7;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 16px;
+  }
+  textarea:focus { border-color: rgba(201,169,110,0.5); }
+  textarea::placeholder { color: rgba(160,144,128,0.4); font-style: italic; }
+
+  .btn-unlock {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 12px 28px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 1px;
+  }
+  .btn-unlock:hover { background: var(--gold); color: var(--dark); }
+
+  /* SPECIAL GIFT CARD */
+  .gift-card {
+    background: linear-gradient(135deg, rgba(139,94,139,0.08), rgba(201,169,110,0.05));
+    border: 1px solid rgba(201,169,110,0.3);
+    border-radius: 2px;
+    padding: 32px 28px 32px 36px;
+    position: relative;
+    animation: revealCard 0.6s ease;
+  }
+  .gift-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: linear-gradient(to bottom, var(--accent), var(--gold));
+  }
+  .gift-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+    display: block;
+  }
+  .gift-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-style: italic;
+    color: var(--gold-light);
+    line-height: 1.8;
+    margin-bottom: 24px;
+  }
+
+  /* NEXT HINT SCREEN */
+  .next-screen {
+    text-align: center;
+    padding: 40px 20px;
+    animation: revealCard 0.5s ease;
+  }
+  .next-screen .next-icon { font-size: 28px; margin-bottom: 16px; }
+  .next-screen .next-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-style: italic;
+    color: var(--gold-light);
+    line-height: 1.8;
+    max-width: 420px;
+    margin: 0 auto 28px;
+  }
+
+  /* ERROR */
+  .error-msg {
+    color: rgba(200,100,100,0.8);
+    font-size: 0.72rem;
+    margin-top: -8px;
+    margin-bottom: 12px;
+    font-style: italic;
+    display: none;
+  }
+
+  /* COMPLETED */
+  .completed-section {
+    margin-top: 40px;
+  }
+  .completed-title {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(160,144,128,0.4);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(201,169,110,0.08);
+  }
+  .completed-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(201,169,110,0.06);
+    cursor: pointer;
+  }
+  .completed-item:last-child { border-bottom: none; }
+  .completed-check {
+    width: 20px;
+    height: 20px;
+    background: var(--gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--dark);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .completed-info { flex: 1; }
+  .completed-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    color: rgba(232,213,163,0.7);
+    line-height: 1.3;
+    margin-bottom: 2px;
+  }
+  .completed-opinion {
+    font-size: 0.72rem;
+    color: rgba(160,144,128,0.6);
+    font-style: italic;
+    line-height: 1.5;
+    display: none;
+    margin-top: 6px;
+  }
+  .completed-opinion.open { display: block; }
+  .completed-toggle {
+    font-size: 0.6rem;
+    color: rgba(201,169,110,0.4);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  /* FINAL */
+  #final-message {
+    display: none;
+    text-align: center;
+    padding: 64px 24px;
+    background: linear-gradient(135deg, rgba(139,94,139,0.12), rgba(201,169,110,0.08));
+    border: 1px solid rgba(201,169,110,0.35);
+    border-radius: 2px;
+    margin-top: 48px;
+    animation: revealFinal 1.8s ease;
+  }
+  @keyframes revealFinal {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .final-icon {
+    font-size: 56px;
+    display: block;
+    margin-bottom: 28px;
+    animation: pulse 2.5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+  }
+  #final-message h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--gold);
+    margin-bottom: 20px;
+    line-height: 1.4;
+  }
+  .divider {
+    color: rgba(201,169,110,0.3);
+    letter-spacing: 0.4em;
+    font-size: 0.65rem;
+    margin: 20px 0;
+  }
+  #final-message p {
+    font-size: 0.92rem;
+    line-height: 2;
+    color: var(--text);
+    max-width: 460px;
+    margin: 0 auto;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="intro">
+    <span class="key-icon">🗝️</span>
+    <h1>El juego de las llaves</h1>
+    <p>Mi amor está guardado en un cajón.<br>Cada llave que encuentres lo abre un poco más.<br>No sabes cuántas hay.<br>Solo sigue.</p>
+    <div class="counter-bar">
+      Llaves encontradas
+      <span class="counter-num" id="counter">0</span>
+    </div>
+  </div>
+
+  <div id="current-area"></div>
+  <div id="completed-area"></div>
+
+  <div id="final-message">
+    <span class="final-icon">❤️</span>
+    <h2>Abriste el cajón</h2>
+    <div class="divider">· · ·</div>
+    <p>Encontraste todas las llaves… y en el camino hiciste que me enamorara de ti otra vez. Descubrí una versión de ti que no conocía, y ahora siento que te conozco completamente.<br><br>Te amo.</p>
+  </div>
+
+</div>
+
+<script>
+const KEYS = [
+  {
+    title: "El beso que interrumpe",
+    hint: "Hay un momento en que él está mirando a otro lado — a otra persona, a otra cosa. Tú te acercas, lo besas, y el mundo entiende a quién pertenece su atención. Esta llave se gana en ese momento.",
+    nextHint: "La próxima llave tiene que ver con algo que nunca has probado. Él te guía. Todo se siente diferente.",
+    placeholder: "¿Cómo te sentiste haciéndolo delante de todos? ¿Cómo reaccionó él?"
+  },
+  {
+    title: "Fumados juntos",
+    hint: "La primera vez de ella. Él la guía, le enseña a respirar despacio. El mundo se vuelve más lento, más intenso, más de colores. Todo se siente el doble. Y él está ahí, muy cerca, acompañándola en ese viaje nuevo.",
+    nextHint: "La siguiente llave es solo de palabras. Y de voz. Y de imaginación. Sin verse.",
+    placeholder: "¿Qué fue lo primero que sentiste diferente? ¿Qué fue lo más intenso de esa noche?"
+  },
+  {
+    title: "La llamada que calienta",
+    hint: "Una noche, cada uno en su cuarto. Una llamada con intención. Solo palabras, susurros, y lo que la imaginación construye. Planéala con tiempo. Que no sea improvisada.",
+    nextHint: "La próxima llave requiere que no veas nada. Solo sientas.",
+    placeholder: "¿Qué fue lo que más te gustó de hablar así, sin verse?"
+  },
+  {
+    title: "Los ojos vendados",
+    hint: "Sin mirar. Le quitas la ropa sin ver, guiada solo por el tacto y su voz. Él guía tus manos en silencio. La venda es la única regla de esta llave.",
+    nextHint: "La siguiente llave queda grabada. Literalmente.",
+    placeholder: "¿Qué se siente cuando no puedes ver y solo puedes tocar? ¿Qué descubriste?"
+  },
+  {
+    title: "La sesión que se graba",
+    hint: "Una sesión completa, con calma y sin afanes. Queda todo guardado. Un recuerdo de los dos que solo ustedes dos verán.",
+    nextHint: "La próxima llave requiere que uno de los dos llegue primero. Mientras el otro duerme.",
+    placeholder: "¿Cómo te sentiste al verse después? ¿Qué fue lo más especial del video?"
+  },
+  {
+    title: "Buenos días de ese tipo",
+    hint: "Él está dormido. Tú llegas antes de que despierte, y él abre los ojos de la mejor manera posible. La llave es tuya cuando eso pase.",
+    nextHint: "La siguiente llave es al revés. Ahora es él quien llega mientras tú duermes.",
+    placeholder: "¿Cuál fue su reacción al despertar? ¿Qué cara puso?"
+  },
+  {
+    title: "Él llega mientras tú duermes",
+    hint: "Esta vez es él. Tú estás dormida. Sin avisar. La llave se gana cuando eso pase.",
+    nextHint: "La próxima llave está en un cine. Esta vez, dentro de la sala. Con gente cerca.",
+    placeholder: "¿En qué momento te diste cuenta? ¿Qué sentiste al despertar así?"
+  },
+  {
+    title: "En el cine, en la sala",
+    hint: "No el baño esta vez. La sala. La película suena. Hay gente alrededor. Nadie sabe. Tú encuentras la manera.",
+    nextHint: "La próxima llave es vertical, de metal, sube y baja, y hay personas que no saben nada.",
+    placeholder: "¿Qué película sonaba? ¿En qué momento sentiste más adrenalina?"
+  },
+  {
+    title: "El ascensor",
+    hint: "Ella entra sin ropa interior. Él lo sabe. El ascensor lleno no sabe nada. Sus manos encuentran el camino en silencio, sin que nadie note nada.",
+    nextHint: "La próxima llave tiene cuerdas — o lo que tengan a la mano — y palmadas.",
+    placeholder: "¿Cuántos pisos duró? ¿Alguien los miró raro?"
+  },
+  {
+    title: "Atada completamente",
+    hint: "No solo las manos. Todo. La única regla es una palabra para parar si lo necesitas, y confiar. Él sabe lo que hace.",
+    nextHint: "La próxima llave invierte los papeles. Ahora el que está amarrado es él.",
+    placeholder: "¿Qué fue lo más intenso? ¿Qué sentiste al no poder moverte?"
+  },
+  {
+    title: "Ella en control",
+    hint: "Esta vez tú decides todo. Él está amarrado. Tú marcas el ritmo, el tempo, las reglas. Toda la noche.",
+    nextHint: "La próxima llave tiene algo dulce. Y hambre de otro tipo.",
+    placeholder: "¿Cómo te sentiste teniendo el control total? ¿Lo disfrutaste más de lo que esperabas?"
+  },
+  {
+    title: "Chocolate en la piel",
+    hint: "Algo dulce en el cuerpo del otro. Chocolate, arequipe — lo que elijan. La única manera de quitarlo es con la boca. Sin prisa.",
+    nextHint: "La próxima llave es fría, se derrite, y se siente en toda la piel.",
+    placeholder: "¿En qué parte del cuerpo lo pusieron primero? ¿Qué fue lo más divertido?"
+  },
+  {
+    title: "El hielo",
+    hint: "Contraste. Calor del cuerpo, frío del hielo. En la espalda, en el abdomen, en donde él decida. Muy despacio. Muy intenso.",
+    nextHint: "La próxima llave es una cena en un lugar donde nadie los conozca.",
+    placeholder: "¿En qué parte se sintió más intenso? ¿Qué hiciste cuando lo sentiste?"
+  },
+  {
+    title: "La cena a escondidas",
+    hint: "Una cena en algún lugar donde no los conozca nadie. Solo los dos. Como si fueran dos extraños que acaban de enamorarse por primera vez.",
+    nextHint: "La próxima llave no es una experiencia. Es una pregunta. Pero de las que guardan algo importante.",
+    placeholder: "¿De qué hablaron esa noche? ¿Qué se contaron que no habían dicho antes?"
+  },
+  {
+    title: "El secreto que guardaste",
+    hint: "Cuéntale un momento de cuando eran novios que nunca le contaste. Uno que guardaste solo para ti. Puede ser pequeño o enorme. Pero tiene que ser verdad.",
+    nextHint: "La próxima llave es una cena también, pero con un secreto que llevas puesto — o mejor dicho, que no llevas puesto — toda la noche.",
+    placeholder: "¿Qué momento le contaste? ¿Por qué lo habías guardado tanto tiempo?"
+  },
+  {
+    title: "La cena sin ropa interior",
+    hint: "Salen a cenar. Ella lleva puesto todo — menos eso. Él lo sabe desde el principio. Nadie más sabe nada. Toda la noche así.",
+    nextHint: "La próxima llave requiere relajación total, agua, y soltar completamente el control.",
+    placeholder: "¿Cómo te sentiste toda la noche con ese secreto? ¿En qué momento fue más difícil disimular?"
+  },
+  {
+    title: "El squirt",
+    hint: "Él tiene una meta. Tú tienes que relajarte completamente y dejar que pase. Tomar agua. No aguantar nada. Confiar en él.",
+    nextHint: "La próxima llave no tiene instrucciones de posición. Solo una: que ella llegue hasta el final así.",
+    placeholder: "¿Lo lograron? ¿Cómo se sintió? Cuéntalo todo, sin omitir nada."
+  },
+  {
+    title: "Ella sentada en su cara",
+    hint: "Sin vergüenza. Sin cohibición. Completamente. Hasta el final.",
+    nextHint: "La siguiente llave no la ganaste tú. Te la regalaron.",
+    placeholder: "¿Qué fue lo más difícil de soltarte? ¿Qué cambió después de esta llave?"
+  },
+  {
+    special: true,
+    title: "Una llave que no ganaste",
+    giftText: "Hoy ya tienes una llave. No hiciste nada para ganártela. A veces el cajón se abre solo.",
+    nextHint: "La próxima llave es de noche, al aire libre, en un parque.",
+    placeholder: "¿Qué sentiste cuando llegó este mensaje? ¿Qué pensaste?"
+  },
+  {
+    title: "Al aire libre, de noche",
+    hint: "Un parque. De noche. Nadie alrededor — o tal vez sí. El riesgo es parte de la llave.",
+    nextHint: "La próxima llave está debajo de una mesa. En un restaurante. Con meseros cerca.",
+    placeholder: "¿Dónde exactamente estaban? ¿Qué tan nerviosa estabas?"
+  },
+  {
+    title: "Debajo de la mesa",
+    hint: "En un restaurante. Hay meseros. Hay otras mesas con gente. Debajo, ella. Arriba, él, con cara de nada.",
+    nextHint: "La próxima llave está en el lugar más importante de su historia juntos.",
+    placeholder: "¿En qué restaurante? ¿Alguien sospechó algo?"
+  },
+  {
+    title: "Volver al lugar",
+    hint: "El lugar más significativo de su historia juntos. El que ambos saben cuál es sin tener que decirlo. Volver ahí, y hacer algo que ese lugar nunca olvidará.",
+    nextHint: "La próxima llave está en una discoteca. El ruido lo cubre todo.",
+    placeholder: "¿Cuál fue el lugar? ¿Qué sintieron al estar ahí de nuevo?"
+  },
+  {
+    title: "En la discoteca",
+    hint: "Están bailando. En algún momento de la noche desaparecen un rato. Regresan como si nada. La pista no sabe nada.",
+    nextHint: "La próxima llave está bajo las estrellas. Lejos de la ciudad.",
+    placeholder: "¿Qué canción sonaba cuando volvieron? ¿Cuánto tiempo desaparecieron?"
+  },
+  {
+    title: "Glamping bajo las estrellas",
+    hint: "Una noche lejos de la ciudad. Carpa o cabaña. Estrellas afuera. Sin pantallas. Solo los dos y el silencio.",
+    nextHint: "La próxima llave requiere madrugar mucho. Y subir alto.",
+    placeholder: "¿Cómo era el cielo esa noche? ¿Qué se dijeron después?"
+  },
+  {
+    title: "El amanecer en la montaña",
+    hint: "Madrugar juntos. Subir. Ver el cielo cambiar de color. Y hacer el amor ahí arriba mientras el mundo despierta abajo.",
+    nextHint: "La próxima llave tiene burbujas, vapor, y toda una noche por delante sin afanes.",
+    placeholder: "¿De qué color era el cielo cuando empezó? ¿Y cuando terminó?"
+  },
+  {
+    title: "Hotel con jacuzzi",
+    hint: "Una noche entera. Sin afanes. Sin que nadie los busque. Un jacuzzi, sábanas que no son las de casa, y toda la noche.",
+    nextHint: "Ya casi llegas. La última llave es completamente tuya.",
+    placeholder: "¿Cuántas veces salieron de la cama? ¿De qué hablaron a las 3am?"
+  },
+  {
+    title: "La llave maestra — la tuya",
+    hint: "Esta llave no tiene instrucciones. Tú decides qué hacer. Algo que él nunca espere. Algo que venga completamente de ti. Puede ser pequeño o enorme. La única regla: que lo sorprendas de verdad.",
+    nextHint: null,
+    placeholder: "¿Qué decidiste hacer? ¿Cuál fue su reacción? Cuéntalo todo."
+  }
+];
+
+const STORAGE_KEY = 'llaves_v3';
+
+function load() {
+  try {
+    const r = localStorage.getItem(STORAGE_KEY);
+    return r ? JSON.parse(r) : { current: 0, opinions: {} };
+  } catch(e) { return { current: 0, opinions: {} }; }
+}
+
+function save(p) { localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); }
+
+let progress = load();
+
+function updateCounter() {
+  document.getElementById('counter').textContent = progress.current;
+}
+
+function renderCurrent() {
+  const area = document.getElementById('current-area');
+  const i = progress.current;
+
+  if (i >= KEYS.length) {
+    area.innerHTML = '';
+    const fin = document.getElementById('final-message');
+    fin.style.display = 'block';
+    setTimeout(() => fin.scrollIntoView({ behavior: 'smooth' }), 300);
+    return;
+  }
+
+  const key = KEYS[i];
+
+  if (key.special) {
+    area.innerHTML = `
+      <div class="gift-card">
+        <span class="gift-label">🗝️ Llave especial</span>
+        <div class="gift-text">"${key.giftText}"</div>
+        <span class="opinion-label">¿Qué sientes?</span>
+        <textarea id="ta" placeholder="${key.placeholder}"></textarea>
+        <div class="error-msg" id="err">Escribe algo antes de continuar ✍️</div>
+        <button class="btn-unlock" onclick="complete()">Guardar 🗝️</button>
+      </div>`;
+  } else {
+    area.innerHTML = `
+      <div class="current-card">
+        <div class="card-top">
+          <div class="card-level">🗝️ Llave ${i + 1}</div>
+          <div class="card-title">${key.title}</div>
+        </div>
+        <div class="card-body">
+          <div class="hint-box">
+            <span class="hint-label">Pista</span>
+            ${key.hint}
+          </div>
+          <span class="opinion-label">Tu opinión — cuéntame</span>
+          <textarea id="ta" placeholder="${key.placeholder}"></textarea>
+          <div class="error-msg" id="err">Escribe algo antes de continuar ✍️</div>
+          <button class="btn-unlock" onclick="complete()">Llave conseguida 🗝️</button>
+        </div>
+      </div>`;
+  }
+}
+
+function renderCompleted() {
+  const area = document.getElementById('completed-area');
+  if (progress.current === 0) { area.innerHTML = ''; return; }
+
+  let html = `<div class="completed-section"><div class="completed-title">Llaves encontradas</div>`;
+  for (let i = progress.current - 1; i >= 0; i--) {
+    const key = KEYS[i];
+    const op = progress.opinions[i] || '';
+    const name = key.special ? 'Una llave que no ganaste' : key.title;
+    html += `
+      <div class="completed-item" onclick="toggleOp(${i})">
+        <div class="completed-check">✓</div>
+        <div class="completed-info">
+          <div class="completed-name">${name}</div>
+          <div class="completed-opinion" id="op-${i}">${op}</div>
+        </div>
+        <div class="completed-toggle">ver</div>
+      </div>`;
+  }
+  html += `</div>`;
+  area.innerHTML = html;
+}
+
+function toggleOp(i) {
+  const el = document.getElementById(`op-${i}`);
+  if (el) el.classList.toggle('open');
+}
+
+function complete() {
+  const ta = document.getElementById('ta');
+  const err = document.getElementById('err');
+  if (!ta || !ta.value.trim()) {
+    if (err) err.style.display = 'block';
+    return;
+  }
+  const i = progress.current;
+  progress.opinions[i] = ta.value.trim();
+  progress.current = i + 1;
+  save(progress);
+  updateCounter();
+  renderCompleted();
+
+  const key = KEYS[i];
+  if (key.nextHint && progress.current < KEYS.length) {
+    document.getElementById('current-area').innerHTML = `
+      <div class="next-screen">
+        <div class="next-icon">✨</div>
+        <div class="next-text">${key.nextHint}</div>
+        <button class="btn-unlock" onclick="showNext()">Ver siguiente llave 🗝️</button>
+      </div>`;
+  } else {
+    showNext();
+  }
+}
+
+function showNext() {
+  renderCurrent();
+  setTimeout(() => {
+    const a = document.getElementById('current-area');
+    if (a) a.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+// Init
+updateCounter();
+renderCurrent();
+renderCompleted();
+</script>
+</body>
+</html>
